@@ -1,163 +1,115 @@
 """
 Substitution & Elimination Reaction Flowchart
 ──────────────────────────────────────────────
-Generates a decision flowchart for determining SN1, SN2, E1, or E2
-reaction mechanisms based on substrate degree and reaction conditions.
+Color coding:
+    SN2 → Blue border      SN1 → Green border
+    E2  → Dark red border   E1 → Yellow/gold border
 
 Requirements:
     pip install graphviz
-    Also needs Graphviz system package:
-        macOS:   brew install graphviz
-        Ubuntu:  sudo apt install graphviz
-        Windows: choco install graphviz
+    System: brew install graphviz / sudo apt install graphviz
 
 Usage:
     python sn_e_flowchart.py
-    → produces sn_e_flowchart.png and sn_e_flowchart.pdf
 """
 
 import graphviz
 
 def create_flowchart():
-    dot = graphviz.Digraph(
-        "SN_E_Flowchart",
-        format="png",
-        engine="dot",
-    )
+    dot = graphviz.Digraph("SN_E_Flowchart", format="png", engine="dot")
 
-    # ── Global styling ──────────────────────────────────────────────
     dot.attr(
-        rankdir="TB",
-        bgcolor="#0d1117",
-        fontname="Helvetica Neue",
-        pad="0.8",
-        nodesep="0.6",
-        ranksep="0.7",
+        rankdir="TB", bgcolor="white", fontname="Helvetica Neue",
+        pad="0.8", nodesep="0.6", ranksep="0.7",
         label="Substitution & Elimination — Decision Flowchart\n\n",
-        labelloc="t",
-        fontsize="22",
-        fontcolor="#e6edf3",
+        labelloc="t", fontsize="22", fontcolor="#1a1a1a", dpi="200",
     )
 
-    # ── Node style presets ──────────────────────────────────────────
-    start_style = dict(
-        shape="box", style="rounded,filled", fillcolor="#1a1f2e",
-        color="#58a6ff", fontcolor="#58a6ff", fontname="Helvetica Neue Bold",
-        fontsize="14", penwidth="2.5",
-    )
-    question_style = dict(
-        shape="diamond", style="filled", fillcolor="#161b22",
-        color="#f0883e", fontcolor="#f0883e", fontname="Courier Bold",
-        fontsize="11", penwidth="2",
-    )
-    sn2_style = dict(
-        shape="box", style="rounded,filled,bold", fillcolor="#0d4429",
-        color="#3fb950", fontcolor="#3fb950", fontname="Helvetica Neue Bold",
-        fontsize="14", penwidth="2.5",
-    )
-    sn1_style = dict(
-        shape="box", style="rounded,filled,bold", fillcolor="#1a3a1a",
-        color="#56d364", fontcolor="#56d364", fontname="Helvetica Neue Bold",
-        fontsize="14", penwidth="2.5",
-    )
-    e2_style = dict(
-        shape="box", style="rounded,filled,bold", fillcolor="#3d1f00",
-        color="#f78166", fontcolor="#f78166", fontname="Helvetica Neue Bold",
-        fontsize="14", penwidth="2.5",
-    )
-    e1_style = dict(
-        shape="box", style="rounded,filled,bold", fillcolor="#3b1d00",
-        color="#d29922", fontcolor="#d29922", fontname="Helvetica Neue Bold",
-        fontsize="14", penwidth="2.5",
-    )
-    note_style = dict(
-        shape="plaintext", fontcolor="#586069",
-        fontname="Courier", fontsize="9",
-    )
+    # Colors
+    blue, green, dark_red, gold = "#2563eb", "#16a34a", "#b91c1c", "#ca8a04"
+    slate = "#334155"
 
-    # ── Edge style presets ──────────────────────────────────────────
-    default_edge = dict(color="#30363d", fontcolor="#8b949e",
-                        fontname="Courier Bold", fontsize="10", penwidth="1.8")
-    yes_edge = dict(color="#3fb950", fontcolor="#3fb950",
-                    fontname="Courier Bold", fontsize="10", penwidth="1.8")
-    no_edge = dict(color="#f85149", fontcolor="#f85149",
-                   fontname="Courier Bold", fontsize="10", penwidth="1.8")
+    # Style presets
+    start   = dict(shape="box", style="rounded,filled,bold", fillcolor="#f1f5f9",
+                   color=slate, fontcolor=slate, fontname="Helvetica Neue Bold",
+                   fontsize="14", penwidth="2.5")
+    quest   = dict(shape="diamond", style="filled", fillcolor="#f8f9fa",
+                   color="#6b7280", fontcolor="#374151", fontname="Helvetica Neue Bold",
+                   fontsize="11", penwidth="2")
+    sn2     = dict(shape="box", style="rounded,filled,bold", fillcolor="#eff6ff",
+                   color=blue, fontcolor=blue, fontname="Helvetica Neue Bold",
+                   fontsize="14", penwidth="3")
+    sn1     = dict(shape="box", style="rounded,filled,bold", fillcolor="#f0fdf4",
+                   color=green, fontcolor=green, fontname="Helvetica Neue Bold",
+                   fontsize="14", penwidth="3")
+    e2      = dict(shape="box", style="rounded,filled,bold", fillcolor="#fef2f2",
+                   color=dark_red, fontcolor=dark_red, fontname="Helvetica Neue Bold",
+                   fontsize="14", penwidth="3")
+    e1      = dict(shape="box", style="rounded,filled,bold", fillcolor="#fefce8",
+                   color=gold, fontcolor=gold, fontname="Helvetica Neue Bold",
+                   fontsize="14", penwidth="3")
+    note    = dict(shape="plaintext", fontcolor="#9ca3af", fontname="Helvetica Neue",
+                   fontsize="9")
 
-    # ═══════════════════════════════════════════════════════════════
-    #  NODES
-    # ═══════════════════════════════════════════════════════════════
+    edge_d  = dict(color="#94a3b8", fontcolor="#64748b", fontname="Helvetica Neue Bold",
+                   fontsize="10", penwidth="1.8")
+    edge_y  = dict(color="#16a34a", fontcolor="#16a34a", fontname="Helvetica Neue Bold",
+                   fontsize="10", penwidth="1.8")
+    edge_n  = dict(color="#dc2626", fontcolor="#dc2626", fontname="Helvetica Neue Bold",
+                   fontsize="10", penwidth="1.8")
 
-    # Start
-    dot.node("start", "Substrate Carbon Degree?", **start_style)
+    # ── Nodes ──
+    dot.node("start", "Substrate Carbon Degree?", **start)
 
-    # ── 0° branch ──
-    dot.node("sn2_0", "SN2", **sn2_style)
+    dot.node("sn2_0", "SN2", **sn2)
 
-    # ── 1° branch ──
-    dot.node("bulky_1", "Bulky\nbase?", **question_style)
-    dot.node("e2_1", "E2", **e2_style)
-    dot.node("sn2_1", "SN2", **sn2_style)
-    dot.node("note_1", "(most of the time)", **note_style)
+    dot.node("bulky_1", "Bulky\nbase?", **quest)
+    dot.node("e2_1", "E2", **e2)
+    dot.node("sn2_1", "SN2", **sn2)
+    dot.node("note_1", "(most of the time)", **note)
 
-    # ── 2° branch ──
-    dot.node("charge_2", "Nu⁻ has\ncharge?", **question_style)
-    # YES → strong base?
-    dot.node("strong_2", "Strong\nbase?", **question_style)
-    dot.node("e2_2a", "E2", **e2_style)
-    dot.node("sn2_2", "SN2", **sn2_style)
-    # NO → heat?
-    dot.node("heat_2", "Heat?", **question_style)
-    dot.node("e1_2", "E1", **e1_style)
-    dot.node("sn1_2", "SN1", **sn1_style)
+    dot.node("charge_2", "Nu⁻ has\ncharge?", **quest)
+    dot.node("strong_2", "Strong\nbase?", **quest)
+    dot.node("e2_2a", "E2", **e2)
+    dot.node("sn2_2", "SN2", **sn2)
+    dot.node("heat_2", "Heat?", **quest)
+    dot.node("e1_2", "E1", **e1)
+    dot.node("sn1_2", "SN1", **sn1)
 
-    # ── 3° branch ──
-    dot.node("strong_3", "Strong\nbase?", **question_style)
-    dot.node("e2_3", "E2", **e2_style)
-    dot.node("heat_3", "Heat?", **question_style)
-    dot.node("e1_3", "E1", **e1_style)
-    dot.node("sn1_3", "SN1", **sn1_style)
+    dot.node("strong_3", "Strong\nbase?", **quest)
+    dot.node("e2_3", "E2", **e2)
+    dot.node("heat_3", "Heat?", **quest)
+    dot.node("e1_3", "E1", **e1)
+    dot.node("sn1_3", "SN1", **sn1)
 
-    # ═══════════════════════════════════════════════════════════════
-    #  EDGES
-    # ═══════════════════════════════════════════════════════════════
+    # ── Edges ──
+    dot.edge("start", "sn2_0",   label="  0°  ", **edge_d)
+    dot.edge("start", "bulky_1", label="  1°  ", **edge_d)
+    dot.edge("start", "charge_2",label="  2°  ", **edge_d)
+    dot.edge("start", "strong_3",label="  3°  ", **edge_d)
 
-    # From start to each degree
-    dot.edge("start", "sn2_0", label="  0°  ", **default_edge)
-    dot.edge("start", "bulky_1", label="  1°  ", **default_edge)
-    dot.edge("start", "charge_2", label="  2°  ", **default_edge)
-    dot.edge("start", "strong_3", label="  3°  ", **default_edge)
+    dot.edge("bulky_1", "e2_1",  label=" YES ", **edge_y)
+    dot.edge("bulky_1", "sn2_1", label=" NO ",  **edge_n)
+    dot.edge("sn2_1", "note_1",  style="invis")
 
-    # ── 1° ──
-    dot.edge("bulky_1", "e2_1", label=" YES ", **yes_edge)
-    dot.edge("bulky_1", "sn2_1", label=" NO ", **no_edge)
-    dot.edge("sn2_1", "note_1", style="invis")
+    dot.edge("charge_2", "strong_2", label=" YES ", **edge_y)
+    dot.edge("strong_2", "e2_2a",    label=" YES ", **edge_y)
+    dot.edge("strong_2", "sn2_2",    label=" NO ",  **edge_n)
+    dot.edge("charge_2", "heat_2",   label=" NO ",  **edge_n)
+    dot.edge("heat_2",   "e1_2",     label=" YES ", **edge_y)
+    dot.edge("heat_2",   "sn1_2",    label=" NO ",  **edge_n)
 
-    # ── 2° charged ──
-    dot.edge("charge_2", "strong_2", label=" YES ", **yes_edge)
-    dot.edge("strong_2", "e2_2a", label=" YES ", **yes_edge)
-    dot.edge("strong_2", "sn2_2", label=" NO ", **no_edge)
-
-    # ── 2° uncharged ──
-    dot.edge("charge_2", "heat_2", label=" NO ", **no_edge)
-    dot.edge("heat_2", "e1_2", label=" YES ", **yes_edge)
-    dot.edge("heat_2", "sn1_2", label=" NO ", **no_edge)
-
-    # ── 3° ──
-    dot.edge("strong_3", "e2_3", label=" YES ", **yes_edge)
-    dot.edge("strong_3", "heat_3", label=" NO ", **no_edge)
-    dot.edge("heat_3", "e1_3", label=" YES ", **yes_edge)
-    dot.edge("heat_3", "sn1_3", label=" NO ", **no_edge)
+    dot.edge("strong_3", "e2_3",  label=" YES ", **edge_y)
+    dot.edge("strong_3", "heat_3",label=" NO ",  **edge_n)
+    dot.edge("heat_3",   "e1_3",  label=" YES ", **edge_y)
+    dot.edge("heat_3",   "sn1_3", label=" NO ",  **edge_n)
 
     return dot
 
-
 if __name__ == "__main__":
     chart = create_flowchart()
-
-    # Render PNG and PDF
     chart.render("sn_e_flowchart", cleanup=True)
     chart.format = "pdf"
     chart.render("sn_e_flowchart", cleanup=True)
-
     print("✓ Generated: sn_e_flowchart.png")
     print("✓ Generated: sn_e_flowchart.pdf")
